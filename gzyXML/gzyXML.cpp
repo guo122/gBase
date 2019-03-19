@@ -3,12 +3,12 @@
 //  created 3.18.19
 //  written by gzy
 //
-//  https://github.com/guo122
+//  https://github.com/guo122/gzyBase
 //====================================================================
 
 #include <map>
-#include <string>
 #include <vector>
+#include <fstream>
 
 #include "gzyXML.h"
 
@@ -65,6 +65,7 @@ struct XMLNode::Impl
     Impl()
         : _name("")
         , _value("")
+        , _next(nullptr)
         , _parent(nullptr)
         , _overFlag(false)
     {}
@@ -73,8 +74,12 @@ struct XMLNode::Impl
     std::string _value;
     std::vector<attribute_struct> _attriList;
 
+    // 用于同名tag
+    XMLNodePtr _next;
+
     XMLNodePtr _parent;
     std::vector<XMLNodePtr> _children;
+    std::map<std::string, std::vector<XMLNodePtr>> _childrenMap;
 
     bool _overFlag;
 };
@@ -90,12 +95,87 @@ XMLNode::~XMLNode()
     _Impl = nullptr;
 }
 
-void XMLNode::SetName(const std::string &name_)
+XMLNodePtr XMLNode::child(const std::string &name_)
 {
-    _Impl->_name = name_;
+    XMLNodePtr Result = nullptr;
+    std::string lastStr = name_;
+    std::string tmpStr = "";
+    std::string curStr = "";
+    int index = 0;
+    // 去掉前面多余的正斜线
+    if (lastStr.size() > 0 && lastStr[0] == '/')
+    {
+        lastStr.erase(0, 1);
+    }
+    // 增加尾部必须的正斜线
+    if (lastStr.size() > 0 && lastStr[lastStr.size() - 1] != '/')
+    {
+        lastStr.push_back('/');
+    }
+    tmpStr = lastStr.substr(0, lastStr.find_first_of('/'));
+    curStr = tmpStr.substr(0, tmpStr.find_first_of('['));
+    lastStr.erase(0, lastStr.find_first_of('/') + 1);
+    // 判断是否有下标
+    tmpStr.erase(0, tmpStr.find_first_of('['));
+    if (tmpStr.size() > 2)
+    {
+        tmpStr.erase(0, 1);
+        tmpStr.erase(tmpStr.size() - 1, 1);
+        index = std::atoi(tmpStr.c_str());
+    }
+
+    if (!_Impl->_childrenMap[curStr].empty())
+    {
+        if (index < 0 || index >= _Impl->_childrenMap[curStr].size())
+        {
+            index = 0;
+        }
+        if (lastStr.empty())
+        {
+            // 当前目标
+            Result = _Impl->_childrenMap[curStr][index];
+
+            if (_Impl->_childrenMap[curStr].size() > 1 && !_Impl->_childrenMap[curStr][0]->_Impl->_next)
+            {
+                // 存在多个同名项
+                for (int i = 1; i < _Impl->_childrenMap[curStr].size(); ++i)
+                {
+                    // 建立 next快速访问
+                    _Impl->_childrenMap[curStr][i - 1]->_Impl->_next = _Impl->_childrenMap[curStr][i];
+                }
+            }
+        }
+        else
+        {
+            // 递归
+            Result = _Impl->_childrenMap[curStr][index]->child(lastStr);
+        }
+    }
+
+    return Result;
 }
 
-std::string XMLNode::GetName()
+XMLNodePtr XMLNode::next()
+{
+    return _Impl->_next;
+}
+
+bool XMLNode::SetName(const std::string &name_)
+{
+    bool Result = false;
+    typeof (std::find(name_.begin(), name_.end(), '/')) it;
+    if ( (it = std::find(name_.begin(), name_.end(), '/')) == name_.end() &&
+         (it = std::find(name_.begin(), name_.end(), '[')) == name_.end() &&
+         (it = std::find(name_.begin(), name_.end(), ']')) == name_.end())
+    {
+        _Impl->_name = name_;
+        Result = true;
+    }
+
+    return Result;
+}
+
+std::string XMLNode::name()
 {
     return _Impl->_name;
 }
@@ -110,7 +190,7 @@ void XMLNode::AppendValue(const std::string &value_)
     _Impl->_value += value_;
 }
 
-std::string XMLNode::GetValue()
+std::string XMLNode::value()
 {
     return _Impl->_value;
 }
@@ -125,12 +205,20 @@ void XMLNode::AddChild(const XMLNodePtr &child_)
     _Impl->_children.push_back(child_);
 }
 
+void XMLNode::AddChild_map(const XMLNodePtr &child_)
+{
+    if (child_ && !child_->name().empty())
+    {
+        _Impl->_childrenMap[child_->name()].push_back(child_);
+    }
+}
+
 void XMLNode::SetParent(const XMLNodePtr &parent_)
 {
     _Impl->_parent = parent_;
 }
 
-XMLNodePtr XMLNode::GetParent()
+XMLNodePtr XMLNode::parent()
 {
     return _Impl->_parent;
 }
@@ -169,7 +257,6 @@ struct XMLDocument::Impl
 
     XMLNodePtr _root;
     XMLNodePtr _decl;
-    std::map<std::string, bool> _tagMap;
 };
 
 XMLDocument::XMLDocument()
@@ -186,6 +273,24 @@ XMLDocument::~XMLDocument()
 int XMLDocument::load_file(const std::string &file_path_)
 {
     int Result = RESULT_UNKNOWN;
+
+    std::string buf = "";
+    std::string tmpStr = "";
+
+    std::ifstream fp(file_path_, std::ios::in);
+    if (fp.is_open())
+    {
+        while (getline(fp, buf))
+        {
+            tmpStr += buf + "\n";
+        }
+        Result = load_string(tmpStr);
+    }
+    else
+    {
+        Result = RESULT_FILE_FAILURE;
+    }
+
     return Result;
 }
 
@@ -286,6 +391,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
         }
         else if (curType == meta_type::end_tag)
         {
+            // 读取结束tag
             if (xml_str_[i] == '>' || xml_str_[i] == ' ')
             {
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
@@ -295,9 +401,16 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 }
                 else
                 {
-                    if (cur && cur->GetName() == tmpStr && cur->Over())
+                    // 匹配名字，是否配对
+                    if (cur && cur->name() == tmpStr && cur->Over())
                     {
-                        cur = cur->GetParent();
+                        if (cur->parent())
+                        {
+                            // 将子节点添加到父节点map中
+                            cur->parent()->AddChild_map(cur);
+                        }
+
+                        cur = cur->parent();
                     }
                     else
                     {
@@ -381,7 +494,16 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_UNKNOWN;
                     break;
                 }
-                cur->SetName(tmpStr);
+                if (tmpStr.empty())
+                {
+                    Result = RESULT_TAG_NO_NAME;
+                    break;
+                }
+                if (!cur->SetName(tmpStr))
+                {
+                    Result = RESULT_TAG_ILLEGAL;
+                    break;
+                }
             }
         }
         else if (curType == meta_type::declaration_end)
@@ -418,24 +540,41 @@ int XMLDocument::load_string(const std::string &xml_str_)
         {
             if (xml_str_[i] == '>')
             {
+                // 读取完毕无属性的tag
                 curType = meta_type::end;
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
                     break;
                 }
-                cur->SetName(tmpStr);
                 if ((i - 1) >= 0 && xml_str_[i - 1] == '/')
                 {
-                    if (cur && cur->Over())
-                    {
-                        cur = cur->GetParent();
-                    }
-                    else
+                    // 此无属性tag提前结束
+                    if (!cur || !cur->Over())
                     {
                         Result = RESULT_BAD_DOC;
                         break;
                     }
+                    tmpStr.erase(tmpStr.size() - 1, 1);
+                }
+                if (tmpStr.empty())
+                {
+                    Result = RESULT_TAG_NO_NAME;
+                    break;
+                }
+                if (!cur->SetName(tmpStr))
+                {
+                    Result = RESULT_TAG_ILLEGAL;
+                    break;
+                }
+                if (cur->IsOver())
+                {
+                    if (cur->parent())
+                    {
+                        // 将子节点添加到父节点map中
+                        cur->parent()->AddChild_map(cur);
+                    }
+                    cur = cur->parent();
                     if (!cur)
                     {
                         Result = RESULT_OK;
@@ -450,19 +589,36 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_UNKNOWN;
                     break;
                 }
-                cur->SetName(tmpStr);
+                if (tmpStr.empty())
+                {
+                    Result = RESULT_TAG_NO_NAME;
+                    break;
+                }
+                if (!cur->SetName(tmpStr))
+                {
+                    Result = RESULT_TAG_ILLEGAL;
+                    break;
+                }
             }
         }
         else if (curType == meta_type::tag_end)
         {
+            // tag名字已读取，准备读属性或结束标志 >
             if (xml_str_[i] == '>')
             {
+                // 结束tag
                 curType = meta_type::end;
                 if ((i - 1) >= 0 && xml_str_[i - 1] == '/')
                 {
+                    // 单标签，同时开始结束
                     if (cur && cur->Over())
                     {
-                        cur = cur->GetParent();
+                        if (cur->parent())
+                        {
+                            // 将子节点添加到父节点map中
+                            cur->parent()->AddChild_map(cur);
+                        }
+                        cur = cur->parent();
                     }
                     else
                     {
@@ -570,6 +726,33 @@ XMLNodePtr XMLDocument::fisrt_child()
 XMLNodePtr XMLDocument::child(const std::string &name_)
 {
     XMLNodePtr Result = nullptr;
+    std::string lastStr = name_;
+    std::string curStr;
+    // 去掉前面多余的正斜线
+    if (lastStr.size() > 0 && lastStr[0] == '/')
+    {
+        lastStr.erase(0, 1);
+    }
+    // 增加尾部必须的正斜线
+    if (lastStr.size() > 0 && lastStr[lastStr.size() - 1] != '/')
+    {
+        lastStr.push_back('/');
+    }
+    curStr = lastStr.substr(0, lastStr.find_first_of('/'));
+    lastStr.erase(0, lastStr.find_first_of('/') + 1);
+
+    if (_Impl->_root && curStr == _Impl->_root->name())
+    {
+        if (lastStr.empty())
+        {
+            Result = _Impl->_root;
+        }
+        else
+        {
+            Result = _Impl->_root->child(lastStr);
+        }
+    }
+
     return Result;
 }
 
