@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <sys/timeb.h>
 
 #include <gzyXML/gzyXML.h>
 
@@ -25,6 +26,12 @@ void tesssssss(gzy::XMLDocument &doc_, const std::string &name_)
     }
 }
 
+long long getTime(){
+    timeb t;
+    ftime(&t);
+    return t.time * 1000 + t.millitm;
+}
+
 int main(int argc, char *argv[])
 {
     gzy::XMLDocument doc;
@@ -32,39 +39,39 @@ int main(int argc, char *argv[])
 
     std::string tmpStr = "";
 
-    if (doc.load_file("../test/test.xml") == RESULT_OK)
-    {
-//        tesssssss(doc, "wow/characters/character");
-//        tesssssss(doc, "wow/characters/character/name");
-//        tesssssss(doc, "/wow/characters/character[1]/level[]");
-//        tesssssss(doc, "/wow/characters/character[2]/level");
-//        tesssssss(doc, "/wow/characters/character[-2]/level");
-//        tesssssss(doc, "/wow/characters/character[345]/level");
-//        tesssssss(doc, "/wow/characters/character[]/level");
-//        tesssssss(doc, "/wow/characters/character[v]/level");
+    long long t_start, t_end;
 
-//        tesssssss(doc, "/wow/ss");
-//        tesssssss(doc, "/wow/aa");
 
-        ptr = doc.child("wow/characters/character");
+//    gzy::XMLDocument ddcc[50000];
 
-        if (ptr)
-        {
-            std::cout << ptr->child("name")->name() << ": " << ptr->child("name")->value() << std::endl;
-            ptr = ptr->next();
-        }
-        if (ptr)
-        {
-            std::cout << ptr->child("name")->name() << ": " << ptr->child("name")->value() << std::endl;
-            ptr = ptr->next();
-        }
-        if (ptr)
-        {
-            std::cout << ptr->name() << ": " << ptr->value() << std::endl;
-            ptr = ptr->next();
-        }
+    int Result = 0;
 
+    t_start = getTime();
+
+    for (int i = 0; i < 50000; ++i) {
+        doc.load_file("../test/test.xml");
+//        ptr = doc.child("wow/characters/character[1]/level");
+//        if (ptr)
+//        {
+//            if (ptr->value() != "65")
+//            {
+//                Result = 1;
+//            }
+//        }
+//        else
+//        {
+//            Result = 1;
+//        }
     }
+
+    t_end = getTime();
+
+    std::cout << Result << std::endl;
+
+    std::cout << t_end - t_start << std::endl;
+
+
+
 
     return 0;
 }

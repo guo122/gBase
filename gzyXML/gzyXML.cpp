@@ -298,6 +298,8 @@ int XMLDocument::load_string(const std::string &xml_str_)
 {
     int Result = RESULT_UNKNOWN;
 
+    clear();
+
     meta_type curType = meta_type::end;
     int markPos = -1;
     std::string lastAttriName = "";
@@ -715,6 +717,12 @@ bool XMLDocument::to_string(std::string &str_)
 {
     bool Result = false;
     return Result;
+}
+
+void XMLDocument::clear()
+{
+    _Impl->_root = nullptr;
+    _Impl->_decl = nullptr;
 }
 
 XMLNodePtr XMLDocument::fisrt_child()

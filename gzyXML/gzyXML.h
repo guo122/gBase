@@ -72,6 +72,9 @@ public:
     bool to_string(std::string &str_);
 
 public:
+    void clear();
+
+public:
     XMLNodePtr fisrt_child();
     XMLNodePtr child(const std::string &name_);
 
