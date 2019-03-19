@@ -1,0 +1,8 @@
+*.DS_Store
+*.swp
+*.tmp
+*.x
+*.x.c
+bin
+build*
+*.pro.user

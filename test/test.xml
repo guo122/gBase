@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wow _lang="e'n">
+	ll&lt;aa
+	<!---->
+	<ss/>
+	<aa   >.-bb>\/baa<bb>asd</bb>
+        cccccdddd
+    </aa>
+    <characters>
+        <character index = "001" ad="vv" >
+            <name>AAA</name>
+            <level>70</level>
+        </character>
+        <character index="002">
+            <name>BBB</name>
+            <level>65</level>
+        </character>
+    </characters>
+</wow>
