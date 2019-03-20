@@ -15,7 +15,7 @@ GZY_NAMESPACE_BEGIN
 
 enum meta_type
 {
-    end = 0,            // 初始状态
+    end = 0,            // tag外
     just_begin,         // 刚刚读取到 < 标志
 
     // 相对顺序固定
@@ -23,20 +23,17 @@ enum meta_type
     declaration,
     declaration_end,
     decl_attri_name,
-    decl_attri_name_end,
-    decl_attri_value_apos,
-    decl_attri_value_quot,
+    decl_attri_name_end,    //声明属性名字结束，准备读取值
+    decl_attri_value_apos,  //声明属性，单引号包围
+    decl_attri_value_quot,  //双引号包围
 
     // 相对顺序固定
     tag,
     tag_end,
     tag_attri_name,
-    tag_attri_name_end,
-    tag_attri_value_apos,
-    tag_attri_value_quot,
-
-    element,
-    element_end,
+    tag_attri_name_end,     //普通属性名字结束，准备读取值
+    tag_attri_value_apos,   //普通属性，单引号包围
+    tag_attri_value_quot,   //双引号包围
 
     end_tag,
 
@@ -404,26 +401,19 @@ int XMLDocument::load_string(const std::string &xml_str_)
             if (xml_str_[i] == '<')
             {
                 curType = meta_type::just_begin;
+                if (cur && _Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
+                {
+                    if (cur->value().empty() && !tmpStr.empty())
+                    {
+                        cur->setValue(tmpStr.substr(0, tmpStr.find_last_of('\n')));
+                    }
+                }
             }
             else
             {
-                curType = meta_type::element;
-                markPos = i;
-            }
-            break;
-
-        case meta_type::element:
-            if (xml_str_[i] == '<' && cur)
-            {
-                curType = meta_type::just_begin;
-                if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
+                if (markPos <= 0)
                 {
-                    Result = RESULT_UNKNOWN;
-                    curType = meta_type::error;
-                }
-                if (cur->value().empty() && !tmpStr.empty())
-                {
-                    cur->setValue(tmpStr.substr(0, tmpStr.find_last_of('\n')));
+                    markPos = i;
                 }
             }
             break;
@@ -744,7 +734,6 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 // 依赖meta_type中元素顺序 返回 decl_end 或 tag_end 状态
                 curType = static_cast<meta_type>(static_cast<int>(curType) - 3);
 
-                // in
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
@@ -761,7 +750,6 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 // 依赖meta_type中元素顺序 返回 decl_end 或 tag_end 状态
                 curType = static_cast<meta_type>(static_cast<int>(curType) - 4);
 
-                // in
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
