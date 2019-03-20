@@ -41,6 +41,7 @@ enum meta_type
     end_tag,
 
     comment,
+    error
 };
 
 struct XMLNode::Impl
@@ -397,8 +398,9 @@ int XMLDocument::load_string(const std::string &xml_str_)
 
     for (size_t i = 0; i < xml_str_.size(); ++i)
     {
-        if (curType == meta_type::end)
+        switch (curType)
         {
+        case meta_type::end:
             if (xml_str_[i] == '<')
             {
                 curType = meta_type::just_begin;
@@ -408,25 +410,25 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 curType = meta_type::element;
                 markPos = i;
             }
-        }
-        else if (curType == meta_type::element)
-        {
+            break;
+
+        case meta_type::element:
             if (xml_str_[i] == '<' && cur)
             {
                 curType = meta_type::just_begin;
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
-                    break;
+                    curType = meta_type::error;
                 }
                 if (cur->value().empty() && !tmpStr.empty())
                 {
                     cur->setValue(tmpStr.substr(0, tmpStr.find_last_of('\n')));
                 }
             }
-        }
-        else if (curType == meta_type::just_begin)
-        {
+            break;
+
+        case meta_type::just_begin:
             if (xml_str_[i] == '?')
             {
                 curType = meta_type::declaration;
@@ -445,7 +447,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 else
                 {
                     Result = RESULT_BAD_DOC;
-                    break;
+                    curType = meta_type::error;
                 }
             }
             else if (xml_str_[i] == '/')
@@ -478,25 +480,25 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     else
                     {
                         Result = RESULT_UNKNOWN;
-                        break;
+                        curType = meta_type::error;
                     }
                 }
             }
             else
             {
                 Result = RESULT_BAD_DOC;
-                break;
+                curType = meta_type::error;
             }
-        }
-        else if (curType == meta_type::end_tag)
-        {
+            break;
+
+        case meta_type::end_tag:
             // 读取结束tag
             if (xml_str_[i] == '>' || xml_str_[i] == ' ')
             {
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_BAD_DOC;
-                    break;
+                    curType = meta_type::error;
                 }
                 else
                 {
@@ -514,7 +516,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     else
                     {
                         Result = RESULT_BAD_DOC;
-                        break;
+                        curType = meta_type::error;
                     }
                 }
             }
@@ -526,24 +528,27 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_OK;
                 }
             }
-        }
-        else if (curType == meta_type::comment)
-        {
-            if (xml_str_[i] == '-' && (i + 2) < xml_str_.size() &&
-                    xml_str_[i + 1] == '-' &&
-                    xml_str_[i + 2] == '>')
+            break;
+
+        case meta_type::comment:
+            if (xml_str_[i] == '-')
             {
-                curType = meta_type::end;
-                i = i + 2;
+                if ((i + 2) < xml_str_.size() &&
+                        xml_str_[i + 1] == '-' &&
+                        xml_str_[i + 2] == '>')
+                {
+                    curType = meta_type::end;
+                    i = i + 2;
+                }
+                else
+                {
+                    Result = RESULT_BAD_DOC;
+                    curType = meta_type::error;
+                }
             }
-            else
-            {
-                Result = RESULT_BAD_DOC;
-                break;
-            }
-        }
-        else if (curType == meta_type::declaration)
-        {
+            break;
+
+        case meta_type::declaration:
             if (xml_str_[i] == ' ')
             {
                 curType = meta_type::declaration_end;
@@ -551,22 +556,22 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
-                    break;
+                    curType = meta_type::error;
                 }
                 if (tmpStr.empty())
                 {
                     Result = RESULT_TAG_NO_NAME;
-                    break;
+                    curType = meta_type::error;
                 }
                 if (!cur->setName(tmpStr))
                 {
                     Result = RESULT_TAG_ILLEGAL;
-                    break;
+                    curType = meta_type::error;
                 }
             }
-        }
-        else if (curType == meta_type::declaration_end)
-        {
+            break;
+
+        case meta_type::declaration_end:
             if (xml_str_[i] == '?')
             {
                 curType = meta_type::declaration_over;
@@ -580,11 +585,11 @@ int XMLDocument::load_string(const std::string &xml_str_)
             else if (xml_str_[i] != ' ')
             {
                 Result = RESULT_BAD_DOC;
-                break;
+                curType = meta_type::error;
             }
-        }
-        else if (curType == meta_type::declaration_over)
-        {
+            break;
+
+        case meta_type::declaration_over:
             if (xml_str_[i] == '>')
             {
                 curType = meta_type::end;
@@ -592,11 +597,11 @@ int XMLDocument::load_string(const std::string &xml_str_)
             else
             {
                 Result = RESULT_BAD_DOC;
-                break;
+                curType = meta_type::error;
             }
-        }
-        else if (curType == meta_type::tag)
-        {
+            break;
+
+        case meta_type::tag:
             if (xml_str_[i] == '>')
             {
                 // 读取完毕无属性的tag
@@ -604,7 +609,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
-                    break;
+                    curType = meta_type::error;
                 }
                 if ((i - 1) >= 0 && xml_str_[i - 1] == '/')
                 {
@@ -612,19 +617,19 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     if (!cur || !cur->Over())
                     {
                         Result = RESULT_BAD_DOC;
-                        break;
+                        curType = meta_type::error;
                     }
                     tmpStr.erase(tmpStr.size() - 1, 1);
                 }
                 if (tmpStr.empty())
                 {
                     Result = RESULT_TAG_NO_NAME;
-                    break;
+                    curType = meta_type::error;
                 }
                 if (!cur->setName(tmpStr))
                 {
                     Result = RESULT_TAG_ILLEGAL;
-                    break;
+                    curType = meta_type::error;
                 }
                 if (cur->isOver())
                 {
@@ -646,22 +651,22 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
-                    break;
+                    curType = meta_type::error;
                 }
                 if (tmpStr.empty())
                 {
                     Result = RESULT_TAG_NO_NAME;
-                    break;
+                    curType = meta_type::error;
                 }
                 if (!cur->setName(tmpStr))
                 {
                     Result = RESULT_TAG_ILLEGAL;
-                    break;
+                    curType = meta_type::error;
                 }
             }
-        }
-        else if (curType == meta_type::tag_end)
-        {
+            break;
+
+        case meta_type::tag_end:
             // tag名字已读取，准备读属性或结束标志 >
             if (xml_str_[i] == '>')
             {
@@ -682,7 +687,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     else
                     {
                         Result = RESULT_BAD_DOC;
-                        break;
+                        curType = meta_type::error;
                     }
                 }
             }
@@ -696,12 +701,12 @@ int XMLDocument::load_string(const std::string &xml_str_)
             else if (xml_str_[i] != ' ')
             {
                 Result = RESULT_BAD_DOC;
-                break;
+                curType = meta_type::error;
             }
-        }
-        else if (curType == meta_type::decl_attri_name ||
-                 curType == meta_type::tag_attri_name)
-        {
+            break;
+
+        case meta_type::decl_attri_name:
+        case meta_type::tag_attri_name:
             if (xml_str_[i] == ' ' || xml_str_[i] == '=')
             {
                 // 依赖meta_type中元素顺序 状态变成对应的 _end
@@ -711,13 +716,13 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, lastAttriName))
                 {
                     Result = RESULT_UNKNOWN;
-                    break;
+                    curType = meta_type::error;
                 }
             }
-        }
-        else if (curType == meta_type::decl_attri_name_end ||
-                 curType == meta_type::tag_attri_name_end)
-        {
+            break;
+
+        case meta_type::decl_attri_name_end:
+        case meta_type::tag_attri_name_end:
             if (xml_str_[i] == '\'')
             {
                 // 依赖meta_type中元素顺序 状态变成对应的 _apos
@@ -730,10 +735,10 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 curType = static_cast<meta_type>(static_cast<int>(curType) + 2);
                 markPos = i + 1;
             }
-        }
-        else if (curType == meta_type::decl_attri_value_apos ||
-                 curType == meta_type::tag_attri_value_apos)
-        {
+            break;
+
+        case meta_type::decl_attri_value_apos:
+        case meta_type::tag_attri_value_apos:
             if (xml_str_[i] == '\'')
             {
                 // 依赖meta_type中元素顺序 返回 decl_end 或 tag_end 状态
@@ -743,14 +748,14 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
-                    break;
+                    curType = meta_type::error;
                 }
                 cur->setAttribute(lastAttriName, tmpStr);
             }
-        }
-        else if (curType == meta_type::decl_attri_value_quot ||
-                 curType == meta_type::tag_attri_value_quot)
-        {
+            break;
+
+        case meta_type::decl_attri_value_quot:
+        case meta_type::tag_attri_value_quot:
             if (xml_str_[i] == '"')
             {
                 // 依赖meta_type中元素顺序 返回 decl_end 或 tag_end 状态
@@ -760,10 +765,15 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 if (!_Impl->XMLSlice(xml_str_, markPos, i, tmpStr))
                 {
                     Result = RESULT_UNKNOWN;
-                    break;
+                    curType = meta_type::error;
                 }
                 cur->setAttribute(lastAttriName, tmpStr);
             }
+            break;
+
+        case meta_type::error:
+            i = xml_str_.size() - 1;
+            break;
         }
     }
 
