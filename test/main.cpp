@@ -65,7 +65,8 @@ void otherExample();
 int main(int argc, char *argv[])
 {
     // 例子
-    example();
+//    example();
+    otherExample();
 
     return 0;
 }
@@ -97,4 +98,6 @@ void otherExample()
         ofp.write(tmpStr.c_str(), tmpStr.size());
     }
     ofp.close();
+
+    std::cin >> tmpStr;
 }

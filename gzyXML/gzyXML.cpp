@@ -122,6 +122,7 @@ XMLNode::XMLNode()
 }
 XMLNode::~XMLNode()
 {
+    clear();
     delete _Impl;
     _Impl = nullptr;
 }
@@ -246,6 +247,29 @@ void XMLNode::setParent(const XMLNodePtr &parent_)
     _Impl->_parent = parent_;
 }
 
+void XMLNode::clear()
+{
+    XMLNodePtr last_cur = nullptr;
+    XMLNodePtr cur = nullptr;
+    for (cur = _Impl->_first_child; cur != nullptr; cur = cur->_Impl->_next)
+    {
+        if (last_cur)
+        {
+            DEL_PTR last_cur;
+            last_cur = nullptr;
+        }
+        cur->clear();
+        last_cur = cur;
+
+    }
+    if (last_cur)
+    {
+        DEL_PTR last_cur;
+        last_cur = nullptr;
+    }
+    _Impl->_first_child = nullptr;
+}
+
 XMLNodePtr XMLNode::parent()
 {
     return _Impl->_parent;
@@ -277,6 +301,7 @@ struct XMLDocument::Impl
 {
     Impl()
         : _root(nullptr)
+        , _decl(nullptr)
     {}
 
     // pos2_ 为超尾 下标
@@ -348,6 +373,7 @@ XMLDocument::XMLDocument()
 
 XMLDocument::~XMLDocument()
 {
+    clear();
     delete _Impl;
     _Impl = nullptr;
 }
@@ -396,7 +422,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
     XMLNodePtr cur = nullptr;
     XMLNodePtr tmpNodePtr = nullptr;
 
-    _Impl->_decl = std::make_shared<XMLNode>();
+    _Impl->_decl = NEW_XMLNodePtr;
 
     for (size_t i = 0; i < xml_str_.size(); ++i)
     {
@@ -458,7 +484,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 curType = meta_type::tag;
                 markPos = i;
 
-                tmpNodePtr = std::make_shared<XMLNode>();
+                tmpNodePtr = NEW_XMLNodePtr;
 
                 if (!_Impl->_root)
                 {
@@ -815,8 +841,17 @@ bool XMLDocument::to_string(std::string &str_)
 
 void XMLDocument::clear()
 {
-    _Impl->_root = nullptr;
-    _Impl->_decl = nullptr;
+    if (_Impl->_decl)
+    {
+        DEL_PTR _Impl->_decl;
+        _Impl->_decl = nullptr;
+    }
+    if (_Impl->_root)
+    {
+        _Impl->_root->clear();
+        DEL_PTR _Impl->_root;
+        _Impl->_root = nullptr;
+    }
 }
 
 XMLNodePtr XMLDocument::fisrt_child()

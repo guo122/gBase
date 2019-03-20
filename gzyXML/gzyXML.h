@@ -26,7 +26,13 @@ GZY_NAMESPACE_BEGIN
 
 class XMLDocument;
 class XMLNode;
-typedef std::shared_ptr<XMLNode> XMLNodePtr;
+//typedef std::shared_ptr<XMLNode> XMLNodePtr;
+typedef XMLNode * XMLNodePtr;
+
+//#define NEW_XMLNodePtr std::make_shared<XMLNode>()
+#define NEW_XMLNodePtr new XMLNode
+
+#define DEL_PTR delete
 
 class XMLNode
 {
@@ -72,6 +78,7 @@ protected:
     void appendValue(const std::string &value_);
     void setAttribute(const std::string &name_, const std::string &value_);
     void setParent(const XMLNodePtr &parent_);
+    void clear();
 
 protected:
     // 添加孩子
