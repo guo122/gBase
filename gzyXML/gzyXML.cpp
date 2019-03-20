@@ -41,11 +41,6 @@ enum meta_type
     end_tag,
 
     comment,
-    comment_1,
-    comment_2,
-    comment_3,
-    comment_4,
-    comment_end
 };
 
 struct XMLNode::Impl
@@ -400,11 +395,8 @@ int XMLDocument::load_string(const std::string &xml_str_)
 
     _Impl->_decl = std::make_shared<XMLNode>();
 
-    char tmpC;
-
     for (size_t i = 0; i < xml_str_.size(); ++i)
     {
-        tmpC = xml_str_[i];
         if (curType == meta_type::end)
         {
             if (xml_str_[i] == '<')
@@ -444,6 +436,17 @@ int XMLDocument::load_string(const std::string &xml_str_)
             else if (xml_str_[i] == '!')
             {
                 curType = meta_type::comment;
+                if (i + 5 < xml_str_.size() &&
+                        xml_str_[i + 1] == '-' &&
+                        xml_str_[i + 2] == '-')
+                {
+                    i = i + 2;
+                }
+                else
+                {
+                    Result = RESULT_BAD_DOC;
+                    break;
+                }
             }
             else if (xml_str_[i] == '/')
             {
@@ -526,52 +529,12 @@ int XMLDocument::load_string(const std::string &xml_str_)
         }
         else if (curType == meta_type::comment)
         {
-            if (xml_str_[i] == '-')
-            {
-                curType = meta_type::comment_1;
-            }
-            else
-            {
-                Result = RESULT_BAD_DOC;
-                break;
-            }
-        }
-        else if (curType == meta_type::comment_1)
-        {
-            if (xml_str_[i] == '-')
-            {
-                curType = meta_type::comment_2;
-            }
-            else
-            {
-                Result = RESULT_BAD_DOC;
-                break;
-            }
-        }
-        else if (curType == meta_type::comment_2)
-        {
-            if (xml_str_[i] == '-')
-            {
-                curType = meta_type::comment_3;
-            }
-        }
-        else if (curType == meta_type::comment_3)
-        {
-            if (xml_str_[i] == '-')
-            {
-                curType = meta_type::comment_4;
-            }
-            else
-            {
-                Result = RESULT_BAD_DOC;
-                break;
-            }
-        }
-        else if (curType == meta_type::comment_4)
-        {
-            if (xml_str_[i] == '>')
+            if (xml_str_[i] == '-' && (i + 2) < xml_str_.size() &&
+                    xml_str_[i + 1] == '-' &&
+                    xml_str_[i + 2] == '>')
             {
                 curType = meta_type::end;
+                i = i + 2;
             }
             else
             {
