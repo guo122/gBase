@@ -11,29 +11,66 @@ ll&lt;aa<!----><ss/><aa   >.-bb>\/baa<bb>asd</bb>cccccdddd</aa><characters>\
 <character index = \"001\" ad=\"vv\" ><name>AAA</name><level>70</level></character>\
 <character index=\"002\"><name>BBB</name><level>65</level></character></characters></wow>";
 
-void tesssssss(gzy::XMLDocument &doc_, const std::string &name_)
-{
-    gzy::XMLNodePtr ptr;
-    ptr = doc_.child(name_);
-    std::cout << "----------------------------------" << std::endl;
-    std::cout << name_ << std::endl;
-    if (ptr)
-    {
-        std::cout << ptr->name() << ": " << ptr->value() << std::endl;
-    }
-    else
-    {
-        std::cout << "---wrong---" << std::endl;
-    }
-}
-
 long long getTime(){
     timeb t;
     ftime(&t);
     return t.time * 1000 + t.millitm;
 }
 
+void example()
+{
+    std::string tmpStr = "";
+    // 创建文档，节点
+    gzy::XMLDocument doc;
+    gzy::XMLNodePtr node;
+
+    // 从字符串解析
+    doc.load_string(testXML);
+    // 序列化
+    doc.to_string(tmpStr);
+    // 输出结果
+    std::cout << tmpStr << std::endl;
+    std::cout << "--------------------------------" << std::endl;
+
+    // 从文件解析
+    doc.load_file("../test/test.xml");
+    // 序列化
+    doc.to_string(tmpStr);
+    // 输出结果
+    std::cout << tmpStr << std::endl;
+    std::cout << "--------------------------------" << std::endl;
+
+    // 获取节点
+    node = doc.child("wow/characters/character[1]/name");
+    if (node)
+    {
+        // 获取该节点的值
+        std::cout << node->value() << std::endl;
+
+        if (node = node->next())
+        {
+            // 获取该节点的兄弟节点
+            std::cout << node->value() << std::endl;
+        }
+        if (node = node->parent())
+        {
+            // 获取父节点的属性
+            std::cout << node->attribute("index") << std::endl;
+        }
+    }
+}
+
+void otherExample();
+
 int main(int argc, char *argv[])
+{
+    // 例子
+    example();
+
+    return 0;
+}
+
+void otherExample()
 {
     long long t_start, t_end;
 
@@ -60,6 +97,4 @@ int main(int argc, char *argv[])
         ofp.write(tmpStr.c_str(), tmpStr.size());
     }
     ofp.close();
-
-    return 0;
 }

@@ -158,6 +158,11 @@ XMLNodePtr XMLNode::next()
     return _Impl->_next;
 }
 
+XMLNodePtr XMLNode::prev()
+{
+    return _Impl->_prev;
+}
+
 XMLNodePtr XMLNode::array_next()
 {
     return _Impl->_array_next;

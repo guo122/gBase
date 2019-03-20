@@ -45,6 +45,9 @@ public:
     // 遍历查找下一个兄弟节点，无节点返回nullptr
     XMLNodePtr next();
 
+    // 遍历查找上一个兄弟节点，无节点返回nullptr
+    XMLNodePtr prev();
+
     // 遍历同名兄弟节点，类似数组，无节点返回nullptr
     XMLNodePtr array_next();
 
