@@ -122,7 +122,7 @@ XMLNode::XMLNode()
 }
 XMLNode::~XMLNode()
 {
-//    clear();
+    clear();
     delete _Impl;
     _Impl = nullptr;
 }
@@ -364,8 +364,6 @@ struct XMLDocument::Impl
 
     XMLNodePtr _root;
     XMLNodePtr _decl;
-
-    std::vector<XMLNodePtr> _node_list;
 };
 
 XMLDocument::XMLDocument()
@@ -392,15 +390,10 @@ int XMLDocument::load_file(const std::string &file_path_)
         long long length = ftell(fp);
         fseek(fp, 0, SEEK_SET);
 
-        char * buf = static_cast<char *>(malloc(length + 1));
+        char buf[length + 1];
         fread(buf, 1, length, fp);
 
         Result = load_string(buf);
-
-        if (buf)
-        {
-            delete [] buf;
-        }
     }
     else
     {
@@ -487,7 +480,6 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 markPos = i;
 
                 tmpNodePtr = NEW_XMLNodePtr;
-                _Impl->_node_list.push_back(tmpNodePtr);
 
                 if (!_Impl->_root)
                 {
@@ -851,14 +843,9 @@ void XMLDocument::clear()
     }
     if (_Impl->_root)
     {
-//        _Impl->_root->clear();
-//        DEL_PTR _Impl->_root;
+        _Impl->_root->clear();
+        DEL_PTR _Impl->_root;
         _Impl->_root = nullptr;
-        for (auto &x: _Impl->_node_list)
-        {
-            DEL_PTR x;
-        }
-        _Impl->_node_list.clear();
     }
 }
 

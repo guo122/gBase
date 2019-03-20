@@ -84,12 +84,15 @@ void otherExample()
     gzy::XMLDocument doc;
     gzy::XMLNodePtr ptr;
     doc.load_file("../test/test.xml");
+    doc.to_string(tmpStr);
 
     t_start = getTime();
-    for (int i = 0; i < 50000; ++i) {
+    for (int i = 0; i < 500000; ++i) {
 //        doc.load_string(xml_str);
         doc.load_file("../test/test.xml");
+//        doc.load_string(tmpStr);
         doc.to_string(tmpStr);
+//        doc.to_string(tmpStr);
     }
     t_end = getTime();
     std::cout << t_end - t_start << std::endl;
@@ -100,5 +103,5 @@ void otherExample()
     }
     ofp.close();
 
-//    std::cin >> tmpStr;
+    std::cin >> tmpStr;
 }
