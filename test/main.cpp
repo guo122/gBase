@@ -35,64 +35,31 @@ long long getTime(){
 
 int main(int argc, char *argv[])
 {
+    long long t_start, t_end;
 
-    std::ifstream fp("../test/test.xml", std::ios::in);
-    std::ofstream ofp("../test/tt.xml", std::ios::out);
-    std::string buf;
-    std::string xml_str;
+    std::ofstream ofp;
+
+    ofp.open("../test/tt.xml", std::ios::out);
+
     std::string tmpStr = "";
-    if (fp.is_open())
-    {
-        while (getline(fp, buf))
-        {
-            xml_str += buf + "\n";
-        }
-    }
 
     gzy::XMLDocument doc;
     gzy::XMLNodePtr ptr;
 
-    long long t_start, t_end;
-
-    int Result = 0;
-
     t_start = getTime();
-
-    doc.load_string(xml_str);
-
-    doc.to_string(tmpStr);
+    for (int i = 0; i < 50000; ++i) {
+//        doc.load_string(xml_str);
+        doc.load_file("../test/test.xml");
+        doc.to_string(tmpStr);
+    }
+    t_end = getTime();
+    std::cout << t_end - t_start << std::endl;
 
     if (ofp.is_open())
     {
         ofp.write(tmpStr.c_str(), tmpStr.size());
     }
-
-//    for (int i = 0; i < 50000; ++i) {
-////        doc.load_string(xml_str);
-//        doc.load_file("../test/test.xml");
-//        ptr = doc.child("wow/characters/character[1]/level");
-//        if (ptr)
-//        {
-//            if (ptr->value() != "65")
-//            {
-//                Result = 1;
-//            }
-//        }
-//        else
-//        {
-//            Result = 1;
-//        }
-//    }
-
-
-    t_end = getTime();
-
-    std::cout << Result << std::endl;
-
-    std::cout << t_end - t_start << std::endl;
-
-
-
+    ofp.close();
 
     return 0;
 }

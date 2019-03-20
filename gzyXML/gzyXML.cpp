@@ -8,7 +8,6 @@
 
 #include <map>
 #include <vector>
-#include <fstream>
 
 #include "gzyXML.h"
 
@@ -359,22 +358,29 @@ int XMLDocument::load_file(const std::string &file_path_)
 {
     int Result = RESULT_UNKNOWN;
 
-    std::string buf = "";
-    std::string tmpStr = "";
+    FILE * fp(fopen(file_path_.c_str(), "rb"));
 
-    std::ifstream fp(file_path_, std::ios::in);
-    if (fp.is_open())
+    if (fp)
     {
-        while (getline(fp, buf))
+        fseek(fp, 0, SEEK_END);
+        long long length = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+
+        char * buf = static_cast<char *>(malloc(length + 1));
+        fread(buf, 1, length, fp);
+
+        Result = load_string(buf);
+
+        if (buf)
         {
-            tmpStr += buf + "\n";
+            delete [] buf;
         }
-        Result = load_string(tmpStr);
     }
     else
     {
         Result = RESULT_FILE_FAILURE;
     }
+    fclose(fp);
 
     return Result;
 }
