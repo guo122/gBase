@@ -297,6 +297,49 @@ struct XMLDocument::Impl
         return Result;
     }
 
+    void ToString_Impl(const XMLNodePtr &ptr_, const std::string &indent_, std::string &str_, std::vector<std::string> &attriList_)
+    {
+        std::string tmpStr;
+        typeof (std::find(tmpStr.begin(), tmpStr.end(), ' ')) it;
+        XMLNodePtr cur = nullptr;
+        str_ += "\n" + indent_ + "<" + ptr_->name();
+        ptr_->attributesName(attriList_);
+        for (const auto &x: attriList_)
+        {
+            // 添加属性
+            tmpStr = ptr_->attribute(x);
+            it = std::find(tmpStr.begin(), tmpStr.end(), '\'');
+            if (it == tmpStr.end())
+            {
+                str_ += " " + x + "='" + tmpStr + "'";
+            }
+            else
+            {
+                str_ += " " + x + "=\"" + tmpStr + "\"";
+            }
+        }
+        if (!ptr_->first_child() && ptr_->value().empty())
+        {
+            // 提前结束
+            str_ += "/>";
+        }
+        else
+        {
+            str_ += ">" + ptr_->value();
+
+            for (cur = ptr_->first_child(); cur != nullptr; cur = cur->next())
+            {
+                // 子节点
+                ToString_Impl(cur, indent_ + "    ", str_, attriList_);
+            }
+            if (ptr_->first_child())
+            {
+                str_ += "\n" + indent_;
+            }
+            str_ += "</" + ptr_->name() + ">";
+        }
+    }
+
     XMLNodePtr _root;
     XMLNodePtr _decl;
 };
@@ -378,7 +421,10 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_UNKNOWN;
                     break;
                 }
-                cur->appendValue(tmpStr);
+                if (cur->value().empty() && !tmpStr.empty())
+                {
+                    cur->setValue(tmpStr.substr(0, tmpStr.find_last_of('\n')));
+                }
             }
         }
         else if (curType == meta_type::just_begin)
@@ -758,6 +804,40 @@ int XMLDocument::load_string(const std::string &xml_str_)
 bool XMLDocument::to_string(std::string &str_)
 {
     bool Result = false;
+
+    std::vector<std::string> list;
+    std::string tmpStr = "";
+    typeof (std::find(tmpStr.begin(), tmpStr.end(), ' ')) it;
+    if (_Impl->_root && _Impl->_decl)
+    {
+        str_.clear();
+        Result = true;
+
+        if (!_Impl->_decl->name().empty())
+        {
+            str_ += "<?" + _Impl->_decl->name();
+
+            _Impl->_decl->attributesName(list);
+            for (const auto &x: list)
+            {
+                tmpStr = _Impl->_decl->attribute(x);
+                it = std::find(tmpStr.begin(), tmpStr.end(), '\'');
+                if (it == tmpStr.end())
+                {
+                    str_ += " " + x + "='" + tmpStr + "'";
+                }
+                else
+                {
+                    str_ += " " + x + "=\"" + tmpStr + "\"";
+                }
+            }
+
+            str_ += "?>";
+        }
+
+        _Impl->ToString_Impl(_Impl->_root, "", str_, list);
+    }
+
     return Result;
 }
 

@@ -37,8 +37,10 @@ int main(int argc, char *argv[])
 {
 
     std::ifstream fp("../test/test.xml", std::ios::in);
+    std::ofstream ofp("../test/tt.xml", std::ios::out);
     std::string buf;
     std::string xml_str;
+    std::string tmpStr = "";
     if (fp.is_open())
     {
         while (getline(fp, buf))
@@ -56,22 +58,31 @@ int main(int argc, char *argv[])
 
     t_start = getTime();
 
-    for (int i = 0; i < 50000; ++i) {
-//        doc.load_string(xml_str);
-        doc.load_file("../test/test.xml");
-        ptr = doc.child("wow/characters/character[1]/level");
-        if (ptr)
-        {
-            if (ptr->value() != "65")
-            {
-                Result = 1;
-            }
-        }
-        else
-        {
-            Result = 1;
-        }
+    doc.load_string(xml_str);
+
+    doc.to_string(tmpStr);
+
+    if (ofp.is_open())
+    {
+        ofp.write(tmpStr.c_str(), tmpStr.size());
     }
+
+//    for (int i = 0; i < 50000; ++i) {
+////        doc.load_string(xml_str);
+//        doc.load_file("../test/test.xml");
+//        ptr = doc.child("wow/characters/character[1]/level");
+//        if (ptr)
+//        {
+//            if (ptr->value() != "65")
+//            {
+//                Result = 1;
+//            }
+//        }
+//        else
+//        {
+//            Result = 1;
+//        }
+//    }
 
 
     t_end = getTime();
