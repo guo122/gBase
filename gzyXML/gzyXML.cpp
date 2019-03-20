@@ -49,38 +49,77 @@ enum meta_type
     comment_end
 };
 
-struct attribute_struct
-{
-    attribute_struct(const std::string &name_, const std::string &value_)
-        : _name(name_)
-        , _value(value_)
-    {}
-
-    std::string	_name;
-    std::string	_value;
-};
-
 struct XMLNode::Impl
 {
     Impl()
         : _name("")
         , _value("")
+        , _prev(nullptr)
         , _next(nullptr)
+        , _array_next(nullptr)
         , _parent(nullptr)
+        , _first_child(nullptr)
+        , _last_child(nullptr)
         , _overFlag(false)
     {}
 
+    XMLNodePtr child_Impl(const std::string &name_)
+    {
+        XMLNodePtr Result = nullptr;
+        std::string lastStr = name_;
+        std::string idxStr = "";
+        std::string curStr = "";
+        int index = 0;
+
+        idxStr = lastStr.substr(0, lastStr.find_first_of('/'));
+        curStr = idxStr.substr(0, idxStr.find_first_of('['));
+        lastStr.erase(0, lastStr.find_first_of('/') + 1);
+        // 判断是否有下标
+        idxStr.erase(0, idxStr.find_first_of('['));
+        if (idxStr.size() > 2)
+        {
+            idxStr.erase(0, 1);
+            idxStr.erase(idxStr.size() - 1, 1);
+            index = std::atoi(idxStr.c_str());
+        }
+
+        if (!_childrenMap[curStr].empty())
+        {
+            if (index < 0 || index >= _childrenMap[curStr].size())
+            {
+                index = 0;
+            }
+            if (lastStr.empty())
+            {
+                // 当前目标
+                Result = _childrenMap[curStr][index];
+            }
+            else
+            {
+                // 递归
+                Result = _childrenMap[curStr][index]->_Impl->child_Impl(lastStr);
+            }
+        }
+
+        return Result;
+    }
+
     std::string _name;
     std::string _value;
-    std::vector<attribute_struct> _attriList;
+    std::map<std::string, std::string> _attriMap;
+    std::vector<std::string> _attriNameList;
 
-    // 用于同名tag
+    XMLNodePtr _prev;
     XMLNodePtr _next;
+    // 用于同名tag
+    XMLNodePtr _array_next;
 
     XMLNodePtr _parent;
-    std::vector<XMLNodePtr> _children;
+    XMLNodePtr _first_child;
+    XMLNodePtr _last_child;
     std::map<std::string, std::vector<XMLNodePtr>> _childrenMap;
 
+    // 解析xml时判断tag对 是否结束
     bool _overFlag;
 };
 
@@ -95,62 +134,29 @@ XMLNode::~XMLNode()
     _Impl = nullptr;
 }
 
+XMLNodePtr XMLNode::first_child()
+{
+    return _Impl->_first_child;
+}
+
 XMLNodePtr XMLNode::child(const std::string &name_)
 {
     XMLNodePtr Result = nullptr;
-    std::string lastStr = name_;
-    std::string tmpStr = "";
-    std::string curStr = "";
-    int index = 0;
+    std::string tmpStr = name_;
+
+    // 格式化字符串
     // 去掉前面多余的正斜线
-    if (lastStr.size() > 0 && lastStr[0] == '/')
-    {
-        lastStr.erase(0, 1);
-    }
-    // 增加尾部必须的正斜线
-    if (lastStr.size() > 0 && lastStr[lastStr.size() - 1] != '/')
-    {
-        lastStr.push_back('/');
-    }
-    tmpStr = lastStr.substr(0, lastStr.find_first_of('/'));
-    curStr = tmpStr.substr(0, tmpStr.find_first_of('['));
-    lastStr.erase(0, lastStr.find_first_of('/') + 1);
-    // 判断是否有下标
-    tmpStr.erase(0, tmpStr.find_first_of('['));
-    if (tmpStr.size() > 2)
+    if (tmpStr.size() > 0 && tmpStr[0] == '/')
     {
         tmpStr.erase(0, 1);
-        tmpStr.erase(tmpStr.size() - 1, 1);
-        index = std::atoi(tmpStr.c_str());
     }
-
-    if (!_Impl->_childrenMap[curStr].empty())
+    // 增加尾部必须的正斜线
+    if (tmpStr.size() > 0 && tmpStr[tmpStr.size() - 1] != '/')
     {
-        if (index < 0 || index >= _Impl->_childrenMap[curStr].size())
-        {
-            index = 0;
-        }
-        if (lastStr.empty())
-        {
-            // 当前目标
-            Result = _Impl->_childrenMap[curStr][index];
-
-            if (_Impl->_childrenMap[curStr].size() > 1 && !_Impl->_childrenMap[curStr][0]->_Impl->_next)
-            {
-                // 存在多个同名项
-                for (int i = 1; i < _Impl->_childrenMap[curStr].size(); ++i)
-                {
-                    // 建立 next快速访问
-                    _Impl->_childrenMap[curStr][i - 1]->_Impl->_next = _Impl->_childrenMap[curStr][i];
-                }
-            }
-        }
-        else
-        {
-            // 递归
-            Result = _Impl->_childrenMap[curStr][index]->child(lastStr);
-        }
+        tmpStr.push_back('/');
     }
+
+    Result = _Impl->child_Impl(tmpStr);
 
     return Result;
 }
@@ -160,7 +166,12 @@ XMLNodePtr XMLNode::next()
     return _Impl->_next;
 }
 
-bool XMLNode::SetName(const std::string &name_)
+XMLNodePtr XMLNode::array_next()
+{
+    return _Impl->_array_next;
+}
+
+bool XMLNode::setName(const std::string &name_)
 {
     bool Result = false;
     typeof (std::find(name_.begin(), name_.end(), '/')) it;
@@ -180,12 +191,12 @@ std::string XMLNode::name()
     return _Impl->_name;
 }
 
-void XMLNode::SetValue(const std::string &value_)
+void XMLNode::setValue(const std::string &value_)
 {
     _Impl->_value = value_;
 }
 
-void XMLNode::AppendValue(const std::string &value_)
+void XMLNode::appendValue(const std::string &value_)
 {
     _Impl->_value += value_;
 }
@@ -195,25 +206,45 @@ std::string XMLNode::value()
     return _Impl->_value;
 }
 
-void XMLNode::AddAttribute(const std::string &name_, const std::string &value_)
+void XMLNode::setAttribute(const std::string &name_, const std::string &value_)
 {
-    _Impl->_attriList.push_back(attribute_struct(name_, value_));
-}
-
-void XMLNode::AddChild(const XMLNodePtr &child_)
-{
-    _Impl->_children.push_back(child_);
-}
-
-void XMLNode::AddChild_map(const XMLNodePtr &child_)
-{
-    if (child_ && !child_->name().empty())
+    _Impl->_attriMap[name_] = value_;
+    auto it = std::find(_Impl->_attriNameList.begin(), _Impl->_attriNameList.end(), name_);
+    if (it == _Impl->_attriNameList.end())
     {
-        _Impl->_childrenMap[child_->name()].push_back(child_);
+        _Impl->_attriNameList.push_back(name_);
     }
 }
 
-void XMLNode::SetParent(const XMLNodePtr &parent_)
+void XMLNode::addChild(const XMLNodePtr &child_)
+{
+    if (!_Impl->_first_child)
+    {
+        _Impl->_first_child = _Impl->_last_child = child_;
+    }
+    else
+    {
+        _Impl->_last_child->_Impl->_next = child_;
+        child_->_Impl->_prev = _Impl->_last_child;
+        _Impl->_last_child = child_;
+    }
+}
+
+void XMLNode::addChild_map(const XMLNodePtr &child_)
+{
+    int tmpSize = 0;
+    if (child_ && !child_->name().empty())
+    {
+        _Impl->_childrenMap[child_->name()].push_back(child_);
+        tmpSize = _Impl->_childrenMap[child_->name()].size();
+        if (tmpSize > 1)
+        {
+            _Impl->_childrenMap[child_->name()][tmpSize - 1]->_Impl->_array_next = child_;
+        }
+    }
+}
+
+void XMLNode::setParent(const XMLNodePtr &parent_)
 {
     _Impl->_parent = parent_;
 }
@@ -223,7 +254,18 @@ XMLNodePtr XMLNode::parent()
     return _Impl->_parent;
 }
 
-bool XMLNode::IsOver()
+std::string XMLNode::attribute(const std::string &name_)
+{
+    return _Impl->_attriMap[name_];
+}
+
+void XMLNode::attributesName(std::vector<std::string> &list_)
+{
+    list_.clear();
+    list_.insert(list_.end(), _Impl->_attriNameList.begin(), _Impl->_attriNameList.end());
+}
+
+bool XMLNode::isOver()
 {
     return _Impl->_overFlag;
 }
@@ -336,7 +378,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_UNKNOWN;
                     break;
                 }
-                cur->AppendValue(tmpStr);
+                cur->appendValue(tmpStr);
             }
         }
         else if (curType == meta_type::just_begin)
@@ -374,8 +416,8 @@ int XMLDocument::load_string(const std::string &xml_str_)
                 {
                     if (cur)
                     {
-                        cur->AddChild(tmpNodePtr);
-                        tmpNodePtr->SetParent(cur);
+                        cur->addChild(tmpNodePtr);
+                        tmpNodePtr->setParent(cur);
                         cur = tmpNodePtr;
                     }
                     else
@@ -409,7 +451,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                         if (cur->parent())
                         {
                             // 将子节点添加到父节点map中
-                            cur->parent()->AddChild_map(cur);
+                            cur->parent()->addChild_map(cur);
                         }
 
                         cur = cur->parent();
@@ -501,7 +543,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_TAG_NO_NAME;
                     break;
                 }
-                if (!cur->SetName(tmpStr))
+                if (!cur->setName(tmpStr))
                 {
                     Result = RESULT_TAG_ILLEGAL;
                     break;
@@ -564,17 +606,17 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_TAG_NO_NAME;
                     break;
                 }
-                if (!cur->SetName(tmpStr))
+                if (!cur->setName(tmpStr))
                 {
                     Result = RESULT_TAG_ILLEGAL;
                     break;
                 }
-                if (cur->IsOver())
+                if (cur->isOver())
                 {
                     if (cur->parent())
                     {
                         // 将子节点添加到父节点map中
-                        cur->parent()->AddChild_map(cur);
+                        cur->parent()->addChild_map(cur);
                     }
                     cur = cur->parent();
                     if (!cur)
@@ -596,7 +638,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_TAG_NO_NAME;
                     break;
                 }
-                if (!cur->SetName(tmpStr))
+                if (!cur->setName(tmpStr))
                 {
                     Result = RESULT_TAG_ILLEGAL;
                     break;
@@ -618,7 +660,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                         if (cur->parent())
                         {
                             // 将子节点添加到父节点map中
-                            cur->parent()->AddChild_map(cur);
+                            cur->parent()->addChild_map(cur);
                         }
                         cur = cur->parent();
                     }
@@ -688,7 +730,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_UNKNOWN;
                     break;
                 }
-                cur->AddAttribute(lastAttriName, tmpStr);
+                cur->setAttribute(lastAttriName, tmpStr);
             }
         }
         else if (curType == meta_type::decl_attri_value_quot ||
@@ -705,7 +747,7 @@ int XMLDocument::load_string(const std::string &xml_str_)
                     Result = RESULT_UNKNOWN;
                     break;
                 }
-                cur->AddAttribute(lastAttriName, tmpStr);
+                cur->setAttribute(lastAttriName, tmpStr);
             }
         }
     }

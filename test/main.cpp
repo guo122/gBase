@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <sys/timeb.h>
+#include <fstream>
 
 #include <gzyXML/gzyXML.h>
 
@@ -34,35 +35,44 @@ long long getTime(){
 
 int main(int argc, char *argv[])
 {
+
+    std::ifstream fp("../test/test.xml", std::ios::in);
+    std::string buf;
+    std::string xml_str;
+    if (fp.is_open())
+    {
+        while (getline(fp, buf))
+        {
+            xml_str += buf + "\n";
+        }
+    }
+
     gzy::XMLDocument doc;
     gzy::XMLNodePtr ptr;
 
-    std::string tmpStr = "";
-
     long long t_start, t_end;
-
-
-//    gzy::XMLDocument ddcc[50000];
 
     int Result = 0;
 
     t_start = getTime();
 
     for (int i = 0; i < 50000; ++i) {
+//        doc.load_string(xml_str);
         doc.load_file("../test/test.xml");
-//        ptr = doc.child("wow/characters/character[1]/level");
-//        if (ptr)
-//        {
-//            if (ptr->value() != "65")
-//            {
-//                Result = 1;
-//            }
-//        }
-//        else
-//        {
-//            Result = 1;
-//        }
+        ptr = doc.child("wow/characters/character[1]/level");
+        if (ptr)
+        {
+            if (ptr->value() != "65")
+            {
+                Result = 1;
+            }
+        }
+        else
+        {
+            Result = 1;
+        }
     }
+
 
     t_end = getTime();
 
