@@ -390,10 +390,10 @@ int XMLDocument::load_file(const std::string &file_path_)
         long long length = ftell(fp);
         fseek(fp, 0, SEEK_SET);
 
-        char buf[length + 1];
-        fread(buf, 1, length, fp);
+        std::vector<char> buf(length + 1);
+        fread(buf.data(), 1, length, fp);
 
-        Result = load_string(buf);
+        Result = load_string(buf.data());
     }
     else
     {
