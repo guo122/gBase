@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "gzyXML.h"
+#include "gXml.h"
 
 GZY_NAMESPACE_BEGIN
 
@@ -109,7 +109,7 @@ struct XMLNode::Impl
     XMLNodePtr _parent;
     XMLNodePtr _first_child;
     XMLNodePtr _last_child;
-    std::map<std::string, std::vector<XMLNodePtr>> _childrenMap;
+    std::map<std::string, std::vector<XMLNodePtr> > _childrenMap;
 
     // 解析xml时判断tag对 是否结束
     bool _overFlag;

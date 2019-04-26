@@ -3,6 +3,8 @@
 *.tmp
 *.x
 *.x.c
-bin
-build*
 *.pro.user
+
+bin
+lib
+build-macos

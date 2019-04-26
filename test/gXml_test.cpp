@@ -3,7 +3,8 @@
 #include <sys/timeb.h>
 #include <fstream>
 
-#include <gzyXML/gzyXML.h>
+#include <gzyBase/gXml.h>
+#include <gtest/gtest.h>
 
 const char * testXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
 <wow _lang=\"e'n\">\
@@ -17,62 +18,42 @@ long long getTime(){
     return t.time * 1000 + t.millitm;
 }
 
-void example()
+TEST(gXml, Example)
 {
+    //todo
     std::string tmpStr = "";
-    // 创建文档，节点
     gzy::XMLDocument doc;
     gzy::XMLNodePtr node;
 
-    // 从字符串解析
     doc.load_string(testXML);
-    // 序列化
     doc.to_string(tmpStr);
-    // 输出结果
     std::cout << tmpStr << std::endl;
     std::cout << "--------------------------------" << std::endl;
 
-    // 从文件解析
     doc.load_file("../test/test.xml");
-    // 序列化
     doc.to_string(tmpStr);
-    // 输出结果
     std::cout << tmpStr << std::endl;
     std::cout << "--------------------------------" << std::endl;
 
-    // 获取节点
     node = doc.child("wow/characters/character[1]/name");
     if (node)
     {
-        // 获取该节点的值
         std::cout << node->value() << std::endl;
 
         if (node = node->next())
         {
-            // 获取该节点的兄弟节点
             std::cout << node->value() << std::endl;
         }
         if (node = node->parent())
         {
-            // 获取父节点的属性
             std::cout << node->attribute("index") << std::endl;
         }
     }
 }
 
-void otherExample();
-
-int main(int argc, char *argv[])
+TEST(gXml, OtherExample)
 {
-    // 例子
-//    example();
-    otherExample();
-
-    return 0;
-}
-
-void otherExample()
-{
+    //todo
     long long t_start, t_end;
 
     std::ofstream ofp;

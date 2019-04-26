@@ -1,0 +1,6 @@
+[submodule "BuildScript"]
+	path = BuildScript
+	url = https://github.com/guo122/BuildScript
+[submodule "3rd/googletest"]
+	path = 3rd/googletest
+	url = https://github.com/guo122/googletest
