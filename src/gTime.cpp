@@ -1,21 +1,23 @@
 //====================================================================
-//  ODTimeUtil.cpp
+//  gTime.cpp
 //  created 6.5.18
-//  written by odddd0
+//  written by gzy
 //
-//  https://github.com/odddd0/ODWay
+//  https://github.com/guo122
 //====================================================================
 
-#include "ODTimeUtil.h"
+#include "gTime.h"
 
-ODTimeUtil::ODTimeUtil()
+GZY_NAMESPACE_BEGIN
+
+gTime::gTime()
 {
 
 }
 
-std::string ODTimeUtil::Timestamp2String(const int &timestamp_, const std::string &format_)
+gString gTime::Timestamp2String(const int &timestamp_, const gString &format_)
 {
-    std::string Result = "";
+    gString Result = "";
     struct tm *tmpTm;
     time_t lt;
     char str[80];
@@ -26,9 +28,9 @@ std::string ODTimeUtil::Timestamp2String(const int &timestamp_, const std::strin
     return Result;
 }
 
-std::string ODTimeUtil::Duration2String(const int &timestamp_, const std::string &format_)
+gString gTime::Duration2String(const int &timestamp_, const gString &format_)
 {
-    std::string Result = "";
+    gString Result = "";
 
     int tmpDay = timestamp_ / 86400;
     int tmpInt = timestamp_ % 86400;
@@ -41,21 +43,21 @@ std::string ODTimeUtil::Duration2String(const int &timestamp_, const std::string
 
     bool nextTrans = false;
     int numLength = 0;
-    std::string tmpStr;
+    gString tmpStr;
     if (format_.empty())
     {
         // default format
         if (tmpDay)
         {
-            Result += std::to_string(tmpDay) + "d ";
+            Result += gToString(tmpDay) + "d ";
         }
         if (tmpHour)
         {
-            Result += std::to_string(tmpHour) + "h";
+            Result += gToString(tmpHour) + "h";
         }
         if (tmpMinute)
         {
-            tmpStr = std::to_string(tmpMinute);
+            tmpStr = gToString(tmpMinute);
             while (tmpStr.length() < 2)
             {
                 tmpStr = "0" + tmpStr;
@@ -64,7 +66,7 @@ std::string ODTimeUtil::Duration2String(const int &timestamp_, const std::string
         }
         if (Result.empty())
         {
-            tmpStr = std::to_string(tmpSecond);
+            tmpStr = gToString(tmpSecond);
             while (tmpStr.length() < 2)
             {
                 tmpStr = "0" + tmpStr;
@@ -77,23 +79,23 @@ std::string ODTimeUtil::Duration2String(const int &timestamp_, const std::string
         // digital format like 00:01:22
         if (tmpDay)
         {
-            Result += std::to_string(tmpDay) + "-";
+            Result += gToString(tmpDay) + "-";
         }
-        tmpStr = std::to_string(tmpHour);
+        tmpStr = gToString(tmpHour);
         while (tmpStr.length() < 2)
         {
             tmpStr = "0" + tmpStr;
         }
         Result += tmpStr + ":";
 
-        tmpStr = std::to_string(tmpMinute);
+        tmpStr = gToString(tmpMinute);
         while (tmpStr.length() < 2)
         {
             tmpStr = "0" + tmpStr;
         }
         Result += tmpStr + ":";
 
-        tmpStr = std::to_string(tmpSecond);
+        tmpStr = gToString(tmpSecond);
         while (tmpStr.length() < 2)
         {
             tmpStr = "0" + tmpStr;
@@ -103,7 +105,7 @@ std::string ODTimeUtil::Duration2String(const int &timestamp_, const std::string
     else
     {
         // custom format
-        std::for_each(format_.begin(), format_.end(), [&](const char &x){
+        gForeach(format_.begin(), format_.end(), [&](const char &x){
             if (nextTrans)
             {
                 if (x >= 0x30 && x <= 0x39)
@@ -114,10 +116,10 @@ std::string ODTimeUtil::Duration2String(const int &timestamp_, const std::string
                 {
                     switch (x)
                     {
-                    case 'd':tmpStr = std::to_string(tmpDay);break;
-                    case 'H':tmpStr = std::to_string(tmpHour);break;
-                    case 'M':tmpStr = std::to_string(tmpMinute);break;
-                    case 'S':tmpStr = std::to_string(tmpSecond);break;
+                    case 'd':tmpStr = gToString(tmpDay);break;
+                    case 'H':tmpStr = gToString(tmpHour);break;
+                    case 'M':tmpStr = gToString(tmpMinute);break;
+                    case 'S':tmpStr = gToString(tmpSecond);break;
                     default:tmpStr.clear();break;
                     }
                     while (tmpStr.length() < numLength && !tmpStr.empty())
@@ -145,7 +147,7 @@ std::string ODTimeUtil::Duration2String(const int &timestamp_, const std::string
     return Result;
 }
 
-bool ODTimeUtil::IsSameDay(const int &timstamp1_, const int &timstamp2_)
+bool gTime::IsSameDay(const int &timstamp1_, const int &timstamp2_)
 {
     struct tm tmpTm1, tmpTm2;
     time_t lt;
@@ -169,12 +171,12 @@ bool ODTimeUtil::IsSameDay(const int &timstamp1_, const int &timstamp2_)
 
 }
 
-void ODTimeUtil::DateJump(std::string &date_, const int &count_)
+void gTime::DateJump(gString &date_, const int &count_)
 {
     struct tm tmpTm;
-    tmpTm.tm_year = std::stoi("20" + date_.substr(0, 2)) - 1900;
-    tmpTm.tm_mon = std::stoi(date_.substr(3, 2)) - 1;
-    tmpTm.tm_mday = std::stoi(date_.substr(6, 2)) + count_;
+    tmpTm.tm_year = gStoI("20" + date_.substr(0, 2)) - 1900;
+    tmpTm.tm_mon = gStoI(date_.substr(3, 2)) - 1;
+    tmpTm.tm_mday = gStoI(date_.substr(6, 2)) + count_;
     tmpTm.tm_hour = 0;
     tmpTm.tm_min = 0;
     tmpTm.tm_sec = 0;
@@ -186,7 +188,7 @@ void ODTimeUtil::DateJump(std::string &date_, const int &count_)
     date_ = str;
 }
 
-bool ODTimeUtil::CalcuteBillList(const int &timestamp_, const int &billDates_, int &index_)
+bool gTime::CalcuteBillList(const int &timestamp_, const int &billDates_, int &index_)
 {
     index_ = 0;
 
@@ -211,3 +213,5 @@ bool ODTimeUtil::CalcuteBillList(const int &timestamp_, const int &billDates_, i
 
     return index_ >= 0;
 }
+
+GZY_NAMESPACE_END

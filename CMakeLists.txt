@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.0.2)
 
-project(gzyBase)
+project(gBase)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 1)

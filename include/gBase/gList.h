@@ -1,24 +1,26 @@
 //====================================================================
-//  ODVectorUtil.h
+//  gList.h
 //  created 6.5.18
-//  written by odddd0
+//  written by gzy
 //
-//  https://github.com/odddd0/ODWay
+//  https://github.com/guo122
 //====================================================================
 
-#ifndef _ODVECTORUTIL_H_79F5F3350B2857C60993735A97CE701C_
-#define _ODVECTORUTIL_H_79F5F3350B2857C60993735A97CE701C_
+#ifndef GLIST_H_DE49445E42C90D27825ACC797D37ECF4
+#define GLIST_H_DE49445E42C90D27825ACC797D37ECF4
 
-#include <ODMBase/ODBaseTypes.h>
+#include "defines.h"
 
-class ODVectorUtil
+GZY_NAMESPACE_BEGIN
+
+class gList
 {
 public:
-    ODVectorUtil();
+    gList();
 
 public:
     template<typename T>
-    static bool RefreshInsert(std::vector<T> &list_, const T &val_)
+    static bool RefreshInsert(gVector<T> &list_, const T &val_)
     {
         bool Result = true;
         for (auto pos = list_.begin(); pos != list_.end(); ++pos)
@@ -35,4 +37,6 @@ public:
     }
 };
 
-#endif // _ODVECTORUTIL_H_79F5F3350B2857C60993735A97CE701C_
+GZY_NAMESPACE_END
+
+#endif // GLIST_H_DE49445E42C90D27825ACC797D37ECF4

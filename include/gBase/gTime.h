@@ -1,20 +1,22 @@
 //====================================================================
-//  ODTimeUtil.h
+//  gTime.h
 //  created 6.5.18
-//  written by odddd0
+//  written by gzy
 //
-//  https://github.com/odddd0/ODWay
+//  https://github.com/guo122
 //====================================================================
 
-#ifndef _ODTIMEUTIL_H_2642BAEBF76A480C611A75505D021741
-#define _ODTIMEUTIL_H_2642BAEBF76A480C611A75505D021741
+#ifndef GTIME_H_A96B68C24B5077D25C5D9BE049E38C70
+#define GTIME_H_A96B68C24B5077D25C5D9BE049E38C70
 
-#include <ODMBase/ODBaseTypes.h>
+#include "defines.h"
 
-class ODTimeUtil
+GZY_NAMESPACE_BEGIN
+
+class gTime
 {
 public:
-    ODTimeUtil();
+    gTime();
 
 public:
     /**
@@ -64,7 +66,7 @@ public:
      *
      * @param str_
      */
-    static std::string Timestamp2String(const int &timestamp_, const std::string &format_);
+    static gString Timestamp2String(const int &timestamp_, const gString &format_);
 
     /**
      * @brief Duration2String
@@ -76,7 +78,7 @@ public:
      *      %S:  Second
      * @param str_
      */
-    static std::string Duration2String(const int &timestamp_, const std::string &format_ = "");
+    static gString Duration2String(const int &timestamp_, const gString &format_ = "");
 
     static bool IsSameDay(const int &timstamp1_, const int &timstamp2_);
 
@@ -90,7 +92,7 @@ public:
      * @param count_
      * @return
      */
-    static void DateJump(std::string &date_, const int &count_ = 1);
+    static void DateJump(gString &date_, const int &count_ = 1);
 
     /**
      * @brief CalBillList
@@ -101,4 +103,6 @@ public:
     static bool CalcuteBillList(const int &timestamp_, const int &billDates_, int &index_);
 };
 
-#endif // _ODTIMEUTIL_H_2642BAEBF76A480C611A75505D021741
+GZY_NAMESPACE_END
+
+#endif // GTIME_H_A96B68C24B5077D25C5D9BE049E38C70

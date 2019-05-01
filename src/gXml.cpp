@@ -6,9 +6,6 @@
 //  https://github.com/guo122/gzyBase
 //====================================================================
 
-#include <map>
-#include <vector>
-
 #include "gXml.h"
 
 GZY_NAMESPACE_BEGIN
@@ -55,12 +52,12 @@ struct XMLNode::Impl
         , _overFlag(false)
     {}
 
-    XMLNodePtr child_Impl(const std::string &name_)
+    XMLNodePtr child_Impl(const gString &name_)
     {
         XMLNodePtr Result = nullptr;
-        std::string lastStr = name_;
-        std::string idxStr = "";
-        std::string curStr = "";
+        gString lastStr = name_;
+        gString idxStr = "";
+        gString curStr = "";
         int index = 0;
 
         idxStr = lastStr.substr(0, lastStr.find_first_of('/'));
@@ -72,7 +69,7 @@ struct XMLNode::Impl
         {
             idxStr.erase(0, 1);
             idxStr.erase(idxStr.size() - 1, 1);
-            index = std::atoi(idxStr.c_str());
+            index = gAtoI(idxStr.c_str());
         }
 
         if (!_childrenMap[curStr].empty())
@@ -96,10 +93,10 @@ struct XMLNode::Impl
         return Result;
     }
 
-    std::string _name;
-    std::string _value;
-    std::map<std::string, std::string> _attriMap;
-    std::vector<std::string> _attriNameList;
+    gString _name;
+    gString _value;
+    gMap<gString, gString> _attriMap;
+    gVector<gString> _attriNameList;
 
     XMLNodePtr _prev;
     XMLNodePtr _next;
@@ -109,7 +106,7 @@ struct XMLNode::Impl
     XMLNodePtr _parent;
     XMLNodePtr _first_child;
     XMLNodePtr _last_child;
-    std::map<std::string, std::vector<XMLNodePtr> > _childrenMap;
+    gMap<gString, gVector<XMLNodePtr> > _childrenMap;
 
     // 解析xml时判断tag对 是否结束
     bool _overFlag;
@@ -132,10 +129,10 @@ XMLNodePtr XMLNode::first_child()
     return _Impl->_first_child;
 }
 
-XMLNodePtr XMLNode::child(const std::string &name_)
+XMLNodePtr XMLNode::child(const gString &name_)
 {
     XMLNodePtr Result = nullptr;
-    std::string tmpStr = name_;
+    gString tmpStr = name_;
 
     // 格式化字符串
     // 去掉前面多余的正斜线
@@ -169,13 +166,13 @@ XMLNodePtr XMLNode::array_next()
     return _Impl->_array_next;
 }
 
-bool XMLNode::setName(const std::string &name_)
+bool XMLNode::setName(const gString &name_)
 {
     bool Result = false;
-    typeof (std::find(name_.begin(), name_.end(), '/')) it;
-    if ( (it = std::find(name_.begin(), name_.end(), '/')) == name_.end() &&
-         (it = std::find(name_.begin(), name_.end(), '[')) == name_.end() &&
-         (it = std::find(name_.begin(), name_.end(), ']')) == name_.end())
+    decltype (gFind(name_.begin(), name_.end(), '/')) it;
+    if ( (it = gFind(name_.begin(), name_.end(), '/')) == name_.end() &&
+         (it = gFind(name_.begin(), name_.end(), '[')) == name_.end() &&
+         (it = gFind(name_.begin(), name_.end(), ']')) == name_.end())
     {
         _Impl->_name = name_;
         Result = true;
@@ -184,30 +181,30 @@ bool XMLNode::setName(const std::string &name_)
     return Result;
 }
 
-std::string XMLNode::name()
+gString XMLNode::name()
 {
     return _Impl->_name;
 }
 
-void XMLNode::setValue(const std::string &value_)
+void XMLNode::setValue(const gString &value_)
 {
     _Impl->_value = value_;
 }
 
-void XMLNode::appendValue(const std::string &value_)
+void XMLNode::appendValue(const gString &value_)
 {
     _Impl->_value += value_;
 }
 
-std::string XMLNode::value()
+gString XMLNode::value()
 {
     return _Impl->_value;
 }
 
-void XMLNode::setAttribute(const std::string &name_, const std::string &value_)
+void XMLNode::setAttribute(const gString &name_, const gString &value_)
 {
     _Impl->_attriMap[name_] = value_;
-    auto it = std::find(_Impl->_attriNameList.begin(), _Impl->_attriNameList.end(), name_);
+    auto it = gFind(_Impl->_attriNameList.begin(), _Impl->_attriNameList.end(), name_);
     if (it == _Impl->_attriNameList.end())
     {
         _Impl->_attriNameList.push_back(name_);
@@ -275,12 +272,12 @@ XMLNodePtr XMLNode::parent()
     return _Impl->_parent;
 }
 
-std::string XMLNode::attribute(const std::string &name_)
+gString XMLNode::attribute(const gString &name_)
 {
     return _Impl->_attriMap[name_];
 }
 
-void XMLNode::attributesName(std::vector<std::string> &list_)
+void XMLNode::attributesName(gVector<gString> &list_)
 {
     list_.clear();
     list_.insert(list_.end(), _Impl->_attriNameList.begin(), _Impl->_attriNameList.end());
@@ -305,7 +302,7 @@ struct XMLDocument::Impl
     {}
 
     // pos2_ 为超尾 下标
-    bool XMLSlice(const std::string &xml_, int &pos1_, const int &pos2_, std::string &str_)
+    bool XMLSlice(const gString &xml_, int &pos1_, const int &pos2_, gString &str_)
     {
         bool Result = false;
         if (pos1_ >= 0 && pos1_ < xml_.size() &&
@@ -319,10 +316,10 @@ struct XMLDocument::Impl
         return Result;
     }
 
-    void ToString_Impl(const XMLNodePtr &ptr_, const std::string &indent_, std::string &str_, std::vector<std::string> &attriList_)
+    void ToString_Impl(const XMLNodePtr &ptr_, const gString &indent_, gString &str_, gVector<gString> &attriList_)
     {
-        std::string tmpStr;
-        typeof (std::find(tmpStr.begin(), tmpStr.end(), ' ')) it;
+        gString tmpStr;
+        decltype (gFind(tmpStr.begin(), tmpStr.end(), ' ')) it;
         XMLNodePtr cur = nullptr;
         str_ += "\n" + indent_ + "<" + ptr_->name();
         ptr_->attributesName(attriList_);
@@ -330,7 +327,7 @@ struct XMLDocument::Impl
         {
             // 添加属性
             tmpStr = ptr_->attribute(x);
-            it = std::find(tmpStr.begin(), tmpStr.end(), '\'');
+            it = gFind(tmpStr.begin(), tmpStr.end(), '\'');
             if (it == tmpStr.end())
             {
                 str_ += " " + x + "='" + tmpStr + "'";
@@ -378,7 +375,7 @@ XMLDocument::~XMLDocument()
     _Impl = nullptr;
 }
 
-int XMLDocument::load_file(const std::string &file_path_)
+int XMLDocument::load_file(const gString &file_path_)
 {
     int Result = RESULT_UNKNOWN;
 
@@ -390,7 +387,7 @@ int XMLDocument::load_file(const std::string &file_path_)
         long long length = ftell(fp);
         fseek(fp, 0, SEEK_SET);
 
-        std::vector<char> buf(length + 1);
+        gVector<char> buf(length + 1);
         fread(buf.data(), 1, length, fp);
 
         Result = load_string(buf.data());
@@ -404,7 +401,7 @@ int XMLDocument::load_file(const std::string &file_path_)
     return Result;
 }
 
-int XMLDocument::load_string(const std::string &xml_str_)
+int XMLDocument::load_string(const gString &xml_str_)
 {
     int Result = RESULT_UNKNOWN;
 
@@ -412,8 +409,8 @@ int XMLDocument::load_string(const std::string &xml_str_)
 
     meta_type curType = meta_type::end;
     int markPos = -1;
-    std::string lastAttriName = "";
-    std::string tmpStr = "";
+    gString lastAttriName = "";
+    gString tmpStr = "";
     XMLNodePtr cur = nullptr;
     XMLNodePtr tmpNodePtr = nullptr;
 
@@ -794,13 +791,13 @@ int XMLDocument::load_string(const std::string &xml_str_)
     return Result;
 }
 
-bool XMLDocument::to_string(std::string &str_)
+bool XMLDocument::to_string(gString &str_)
 {
     bool Result = false;
 
-    std::vector<std::string> list;
-    std::string tmpStr = "";
-    typeof (std::find(tmpStr.begin(), tmpStr.end(), ' ')) it;
+    gVector<gString> list;
+    gString tmpStr = "";
+    decltype (gFind(tmpStr.begin(), tmpStr.end(), ' ')) it;
     if (_Impl->_root && _Impl->_decl)
     {
         str_.clear();
@@ -814,7 +811,7 @@ bool XMLDocument::to_string(std::string &str_)
             for (const auto &x: list)
             {
                 tmpStr = _Impl->_decl->attribute(x);
-                it = std::find(tmpStr.begin(), tmpStr.end(), '\'');
+                it = gFind(tmpStr.begin(), tmpStr.end(), '\'');
                 if (it == tmpStr.end())
                 {
                     str_ += " " + x + "='" + tmpStr + "'";
@@ -855,11 +852,11 @@ XMLNodePtr XMLDocument::fisrt_child()
     return Result;
 }
 
-XMLNodePtr XMLDocument::child(const std::string &name_)
+XMLNodePtr XMLDocument::child(const gString &name_)
 {
     XMLNodePtr Result = nullptr;
-    std::string lastStr = name_;
-    std::string curStr;
+    gString lastStr = name_;
+    gString curStr;
     // 去掉前面多余的正斜线
     if (lastStr.size() > 0 && lastStr[0] == '/')
     {

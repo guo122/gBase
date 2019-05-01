@@ -8,6 +8,11 @@ set(SRCROOT ${CMAKE_ROOT_DIR}/test)
 
 set(DIR_SRCS 
 	${SRCROOT}/gtest_main.cc
+	${SRCROOT}/gCKK_test.cpp
+	${SRCROOT}/gDB_test.cpp
+	${SRCROOT}/gList_test.cpp
+	${SRCROOT}/gSqlite_test.cpp
+	${SRCROOT}/gTime_test.cpp
 	${SRCROOT}/gXml_test.cpp
 )
 
@@ -28,7 +33,7 @@ endif()
 
 set(LNK_LIB
 	gtest
-	gzyBase
+	gBase
 )
 
 include_directories(${INC_DIR})
@@ -37,6 +42,5 @@ link_libraries(${LNK_LIB})
 
 add_executable_macro(
 	${PROJECT_NAME} 
-	FOLDER "test" 
 	SOURCES ${DIR_SRCS}
 )

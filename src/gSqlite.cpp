@@ -1,27 +1,29 @@
 //====================================================================
-//  ODSqliteHandle.cpp
+//  gSqlite.cpp
 //  created 6.3.18
-//  written by odddd0
+//  written by gzy
 //
-//  https://github.com/odddd0/ODWay
+//  https://github.com/guo122
 //====================================================================
 
 #include <sqlite3.h>
 
-#include "ODSqliteHandle.h"
+#include "gSqlite.h"
+
+GZY_NAMESPACE_BEGIN
 
 static int callback(void *PV, int argc, char **argv, char **azColName)
 {
-    StringTable * stringTable = reinterpret_cast<StringTable *>(PV);
-    StringList tmpList;
+    gStringTable * gStringTable = reinterpret_cast<::gzy::gStringTable *>(PV);
+    gStringList tmpList;
 
-//    if (stringTable->empty())
+//    if (gStringTable->empty())
 //    {
 //        for (int i = 0; i < argc; ++i)
 //        {
 //            tmpList.push_back(azColName[i]);
 //        }
-//        stringTable->push_back(tmpList);
+//        gStringTable->push_back(tmpList);
 //        tmpList.clear();
 //    }
 
@@ -36,21 +38,21 @@ static int callback(void *PV, int argc, char **argv, char **azColName)
             tmpList.push_back("");
         }
     }
-    stringTable->push_back(tmpList);
+    gStringTable->push_back(tmpList);
 
     return 0;
 }
 
-ODSqliteHandle::ODSqliteHandle()
+gSqlite::gSqlite()
 {
 
 }
 
-bool ODSqliteHandle::ExecImpl(
-        const std::string &DBPath,
-        const std::string &Sql,
-        StringTable &ResStringTable,
-        std::string &ErrMsg)
+bool gSqlite::ExecImpl(
+        const gString &DBPath,
+        const gString &Sql,
+        gStringTable &ResgStringTable,
+        gString &ErrMsg)
 {
     bool Result = true;
     sqlite3 *db;
@@ -68,7 +70,7 @@ bool ODSqliteHandle::ExecImpl(
     else
     {
         /* Execute SQL statement */
-        rc = sqlite3_exec(db, Sql.c_str(), callback, &ResStringTable, &zErrMsg);
+        rc = sqlite3_exec(db, Sql.c_str(), callback, &ResgStringTable, &zErrMsg);
         if(rc != SQLITE_OK)
         {
             ErrMsg = "SQL error: ";
@@ -80,3 +82,5 @@ bool ODSqliteHandle::ExecImpl(
     }
     return Result;
 }
+
+GZY_NAMESPACE_END

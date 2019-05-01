@@ -3,16 +3,13 @@
 //  created 3.18.19
 //  written by gzy
 //
-//  https://github.com/guo122/gzyBase
+//  https://github.com/guo122
 //====================================================================
 
 #ifndef GZYXML_H_C1A9C397CF09B78418AD30F93912AA72
 #define GZYXML_H_C1A9C397CF09B78418AD30F93912AA72
 
-#include <string>
-
-#define     GZY_NAMESPACE_BEGIN     namespace gzy {
-#define     GZY_NAMESPACE_END       }
+#include "defines.h"
 
 GZY_NAMESPACE_BEGIN
 
@@ -26,10 +23,10 @@ GZY_NAMESPACE_BEGIN
 
 class XMLDocument;
 class XMLNode;
-//typedef std::shared_ptr<XMLNode> XMLNodePtr;
+//typedef gSharedPtr<XMLNode> XMLNodePtr;
 typedef XMLNode * XMLNodePtr;
 
-//#define NEW_XMLNodePtr std::make_shared<XMLNode>()
+//#define NEW_XMLNodePtr gSharedPtr<XMLNode>()
 #define NEW_XMLNodePtr new XMLNode
 
 #define DEL_PTR delete
@@ -46,7 +43,7 @@ public:
     XMLNodePtr first_child();
 
     // 返回指定的孩子节点，可以使用类似路径的索引“aa/bb/cc[2]/dd/”，未找到节点返回nullptr
-    XMLNodePtr child(const std::string &name_);
+    XMLNodePtr child(const gString &name_);
 
     // 遍历查找下一个兄弟节点，无节点返回nullptr
     XMLNodePtr next();
@@ -58,25 +55,25 @@ public:
     XMLNodePtr array_next();
 
     // 返回当前节点的名字
-    std::string name();
+    gString name();
 
     // 返回当前节点的值
-    std::string value();
+    gString value();
 
     // 返回当前节点的父节点，无父节点返回nullptr
     XMLNodePtr parent();
 
     // 查找当前节点的属性值，无指定属性返回空字符串
-    std::string attribute(const std::string &name_);
+    gString attribute(const gString &name_);
 
     // 获取此节点拥有的属性名字
-    void attributesName(std::vector<std::string> &list_);
+    void attributesName(gVector<gString> &list_);
 
 protected:
-    bool setName(const std::string &name_);
-    void setValue(const std::string &value_);
-    void appendValue(const std::string &value_);
-    void setAttribute(const std::string &name_, const std::string &value_);
+    bool setName(const gString &name_);
+    void setValue(const gString &value_);
+    void appendValue(const gString &value_);
+    void setAttribute(const gString &name_, const gString &value_);
     void setParent(const XMLNodePtr &parent_);
     void clear();
 
@@ -107,13 +104,13 @@ public:
 
 public:
     // 从文件读取xml文档解析
-    int load_file(const std::string &file_path_);
+    int load_file(const gString &file_path_);
 
     // 解析xml字符串
-    int load_string(const std::string &xml_str_);
+    int load_string(const gString &xml_str_);
 
     // 序列化生成xml字符串
-    bool to_string(std::string &str_);
+    bool to_string(gString &str_);
 
 public:
     // 清空数据
@@ -124,7 +121,7 @@ public:
     XMLNodePtr fisrt_child();
 
     // 返回指定的孩子节点，可以使用类似路径的索引“aa/bb/cc[2]/dd/”，未找到节点返回nullptr
-    XMLNodePtr child(const std::string &name_);
+    XMLNodePtr child(const gString &name_);
 
 private:
     struct Impl;

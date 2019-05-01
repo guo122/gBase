@@ -4,7 +4,7 @@ cmakeImpl() {
 }
 
 if [ "$1" == "" ] ; then
-    cmakeImpl "gzyBase"
+    cmakeImpl "gBase"
 else
     cmakeImpl "$1"
 fi

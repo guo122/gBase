@@ -1,14 +1,18 @@
 //====================================================================
-//  ODVectorUtil.cpp
+//  gList.cpp
 //  created 6.5.18
-//  written by odddd0
+//  written by gzy
 //
-//  https://github.com/odddd0/ODWay
+//  https://github.com/guo122
 //====================================================================
 
-#include "ODVectorUtil.h"
+#include "gList.h"
 
-ODVectorUtil::ODVectorUtil()
+GZY_NAMESPACE_BEGIN
+
+gList::gList()
 {
 
 }
+
+GZY_NAMESPACE_END

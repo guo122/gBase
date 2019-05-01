@@ -1,36 +1,39 @@
 //====================================================================
-//  ODCKK.cpp
+//  gCKK.cpp
 //  created 6.13.18
-//  written by odddd0
+//  written by gzy
 //
-//  https://github.com/odddd0/ODWay
+//  https://github.com/guo122
 //====================================================================
 
-#include "ODCKK.h"
-#include "ODUtil.h"
+#include "gBase.h"
 
-struct ODCKK::Impl
+#include "gCKK.h"
+
+GZY_NAMESPACE_BEGIN
+
+struct gCKK::Impl
 {
-    StringList _classifyList;
-    StringListPtrMap _kindFirstList;
-    std::map<std::string, StringListPtrMap> _kindSecondList;
+    gStringList _classifyList;
+    gStringListPtrMap _kindFirstList;
+    gMap<gString, gStringListPtrMap> _kindSecondList;
 };
 
-ODCKK::ODCKK()
+gCKK::gCKK()
     : _Impl(new Impl)
 {
 
 }
 
-ODCKK::~ODCKK()
+gCKK::~gCKK()
 {
     delete _Impl;
 }
 
-bool ODCKK::appendData(const std::string &classify_, const std::string &kindFirst_, const std::string &kindSecond_)
+bool gCKK::append(const gString &classify_, const gString &kindFirst_, const gString &kindSecond_)
 {
     bool Result = true;
-    StringListPtr tmpStrListPtr;
+    gStringListPtr tmpStrListPtr;
     if (classify_.empty() || kindFirst_.empty() || kindSecond_.empty())
     {
         Result = false;
@@ -38,49 +41,49 @@ bool ODCKK::appendData(const std::string &classify_, const std::string &kindFirs
     else
     {
         // classify
-        if (ODVectorUtil::RefreshInsert<std::string>(_Impl->_classifyList, classify_))
+        if (gList::RefreshInsert<gString>(_Impl->_classifyList, classify_))
         {
             // classify first appearance
-            tmpStrListPtr = std::make_shared<StringList>();
+            tmpStrListPtr = gMakeShared<gStringList>();
             tmpStrListPtr->push_back(kindFirst_);
             _Impl->_kindFirstList[classify_] = tmpStrListPtr;
 
-            tmpStrListPtr = std::make_shared<StringList>();
+            tmpStrListPtr = gMakeShared<gStringList>();
             tmpStrListPtr->push_back(kindSecond_);
-            StringListPtrMap tmpStrListPtrMap;
+            gStringListPtrMap tmpStrListPtrMap;
             tmpStrListPtrMap[kindFirst_] = tmpStrListPtr;
             _Impl->_kindSecondList[classify_] = tmpStrListPtrMap;
         }
         else
         {
             tmpStrListPtr = _Impl->_kindFirstList[classify_];
-            if (ODVectorUtil::RefreshInsert<std::string>(*tmpStrListPtr, kindFirst_))
+            if (gList::RefreshInsert<gString>(*tmpStrListPtr, kindFirst_))
             {
-                tmpStrListPtr = std::make_shared<StringList>();
+                tmpStrListPtr = gMakeShared<gStringList>();
                 tmpStrListPtr->push_back(kindSecond_);
                 _Impl->_kindSecondList[classify_][kindFirst_] = tmpStrListPtr;
             }
             else
             {
                 tmpStrListPtr = _Impl->_kindSecondList[classify_][kindFirst_];
-                ODVectorUtil::RefreshInsert<std::string>(*tmpStrListPtr, kindSecond_);
+                gList::RefreshInsert<gString>(*tmpStrListPtr, kindSecond_);
             }
         }
     }
     return Result;
 }
 
-bool ODCKK::classifyList(StringList &list)
+bool gCKK::classifyList(gStringList &list)
 {
     list = _Impl->_classifyList;
     return !list.empty();
 }
 
-bool ODCKK::kindFirstList(StringList &list, const std::string &classify_)
+bool gCKK::kindFirstList(gStringList &list, const gString &classify_)
 {
     bool Result = true;
-    std::string tmpClassify = classify_;
-    StringListPtr tmpPtr;
+    gString tmpClassify = classify_;
+    gStringListPtr tmpPtr;
     if (classify_.empty() && !_Impl->_classifyList.empty())
     {
         tmpClassify = _Impl->_classifyList[0];
@@ -97,12 +100,12 @@ bool ODCKK::kindFirstList(StringList &list, const std::string &classify_)
     return Result;
 }
 
-bool ODCKK::kindSecondList(StringList &list, const std::string &classify_, const std::string &kindFirst_)
+bool gCKK::kindSecondList(gStringList &list, const gString &classify_, const gString &kindFirst_)
 {
     bool Result = true;
-    std::string tmpClassify = classify_;
-    std::string tmpKindFirst = kindFirst_;
-    StringListPtr tmpPtr;
+    gString tmpClassify = classify_;
+    gString tmpKindFirst = kindFirst_;
+    gStringListPtr tmpPtr;
     if (classify_.empty() && !_Impl->_classifyList.empty())
     {
         tmpClassify = _Impl->_classifyList[0];
@@ -123,9 +126,11 @@ bool ODCKK::kindSecondList(StringList &list, const std::string &classify_, const
     return Result;
 }
 
-void ODCKK::clear()
+void gCKK::clear()
 {
     _Impl->_classifyList.clear();
     _Impl->_kindFirstList.clear();
     _Impl->_kindSecondList.clear();
 }
+
+GZY_NAMESPACE_END
