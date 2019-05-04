@@ -34,6 +34,11 @@ GZY_NAMESPACE_BEGIN
 
 #define     gForeach                            std::for_each
 #define     gFind                               std::find
+#define     gSort                               std::sort
+#define     gFindIf                             std::find_if
+#define     gPair                               std::pair
+
+#define     gStaticPointerCast                  std::static_pointer_cast
 
 typedef     gVector<gString>                    gStringList;
 typedef     gVector<gStringList>                gStringTable;
