@@ -6,6 +6,8 @@
 //  https://github.com/guo122
 //====================================================================
 
+#include <ctime>
+
 #include "gTime.h"
 
 GZY_NAMESPACE_BEGIN

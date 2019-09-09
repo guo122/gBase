@@ -9,6 +9,8 @@
 #ifndef GDB_H_DB81DA8B00554332D1F1E565FEAE9A99
 #define GDB_H_DB81DA8B00554332D1F1E565FEAE9A99
 
+#include <ctime>
+
 #include "defines.h"
 #include "gSqlite.h"
 

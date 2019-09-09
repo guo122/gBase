@@ -28,6 +28,7 @@ set(DIR_SRCS
 
 set(INC_DIR 
     ${CMAKE_ROOT_DIR}/include/gBase
+    ${CMAKE_ROOT_DIR}/../sqlite3
 )
 
 include_directories(${INC_DIR})
