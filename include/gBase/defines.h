@@ -24,6 +24,8 @@ GZY_NAMESPACE_BEGIN
 
 #define     gVector                             std::vector
 #define     gString                             std::string
+#define     gString_sizetype                    gString::size_type
+#define     gString_npos						gString::npos
 #define     gMap                                std::map
 
 #define     gToString                           std::to_string

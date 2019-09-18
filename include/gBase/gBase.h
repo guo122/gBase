@@ -13,6 +13,7 @@
 #include "gDB.h"
 #include "gList.h"
 #include "gSqlite.h"
+#include "gStringUtil.h"
 #include "gTime.h"
 #include "gXml.h"
 

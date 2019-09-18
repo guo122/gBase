@@ -1,6 +1,6 @@
 
 cmakeImpl() {
-	cmake -E make_directory "build-macos" && cmake -E chdir "build-macos" cmake -G "Xcode" ../ -DTHE_PROJECT_PREFIX="$1"
+	cmake -E make_directory "Solution/macos" && cmake -E chdir "Solution/macos" cmake -G "Xcode" ../ -DTHE_PROJECT_PREFIX="$1"
 }
 
 if [ "$1" == "" ] ; then

@@ -15,6 +15,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 
 add_subdirectory("src")
+add_subdirectory("sqlite3")
 
-add_subdirectory("test")
+add_subdirectory("main")
 

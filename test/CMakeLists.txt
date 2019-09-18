@@ -14,6 +14,7 @@ set(DIR_SRCS
 	${SRCROOT}/gSqlite_test.cpp
 	${SRCROOT}/gTime_test.cpp
 	${SRCROOT}/gXml_test.cpp
+	${SRCROOT}/gStringUtil_test.cpp
 )
 
 set(INC_DIR 

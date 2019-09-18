@@ -24,6 +24,8 @@ set(DIR_SRCS
     ${SRCROOT}/gTime.cpp
 	${INCROOT}/gList.h
 	${SRCROOT}/gList.cpp
+	${INCROOT}/gStringUtil.h
+	${SRCROOT}/gStringUtil.cpp
 )
 
 set(INC_DIR 
