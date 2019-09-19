@@ -22,21 +22,51 @@ public:
 
 };
 
-class gStringSplit
+class ISplit
 {
 public:
-	gStringSplit( gString* InStr, const gString& token = " " );
+    ISplit()
+    : m_Str(nullptr)
+    , m_pos1(0)
+    , m_pos2(gString_npos)
+    {}
+    ~ISplit(){}
+    
+public:
+    virtual gString     next() = 0;
+    bool                end() { return m_Str == nullptr; }
+    virtual int         next_i(){ return 0; }
+    virtual float       next_f(){ return 0; }
+    
+protected:
+    gString*            m_Str;
+    gString_sizetype    m_pos1;
+    gString_sizetype    m_pos2;
+};
+
+class gSplit : public ISplit
+{
+public:
+    gSplit( gString* InStr, const gString& token = " " );
 
 public:
-	gString		next();
-
+	virtual gString		next();
+    virtual int         next_i();
+    virtual float       next_f();
+    
 private:
-    gString*            m_Str{ nullptr };
-    gString             m_Token{ " " };
-    gString             m_next{ "" };
-	gString_sizetype	m_pos1{ 0 };
-	gString_sizetype	m_pos2{ gString_npos };
-	gString_sizetype	m_tokenSize{ gString_npos };
+    gString             m_Token;
+    gString             m_next;
+    gString_sizetype    m_tokenSize;
+};
+
+class gSplitArray : public ISplit
+{
+public:
+    gSplitArray( gString* InStr );
+    
+public:
+    virtual gString     next();
 };
 
 GZY_NAMESPACE_END

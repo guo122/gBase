@@ -31,6 +31,7 @@ GZY_NAMESPACE_BEGIN
 #define     gToString                           std::to_string
 #define     gStoI                               std::stoi
 #define     gAtoI                               std::atoi
+#define     gStoF                               std::stof
 
 #define     gMakeShared                         std::make_shared
 #define     gSharedPtr                          std::shared_ptr
