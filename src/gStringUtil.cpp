@@ -57,24 +57,26 @@ gSplitArray::gSplitArray( gString* InStr )
 {
     m_Str = InStr;
     m_pos1 = 0;
-    m_pos2 = -1;
+    m_pos2 = m_Str->find( " ", m_pos1 );
 }
 
 gString gSplitArray::next()
 {
     if ( m_Str )
     {
+        int len = gStoI( m_Str->substr( m_pos1, m_pos2 - m_pos1 ) );
         m_pos1 = m_pos2 + 1;
+        m_pos2 += len + 1;
+        
+        gString ret = m_Str->substr( m_pos1, m_pos2 - m_pos1 );
+        m_pos1 = m_pos2;
         m_pos2 = m_Str->find( " ", m_pos1 );
-        if ( m_pos2 != gString_npos )
+        if ( m_pos2 == gString_npos )
         {
-            int len = gStoI( m_Str->substr( m_pos1, m_pos2 - m_pos1 ) );
-            m_pos1 = m_pos2 + 1;
-            m_pos2 += len + 1;
-            
-            return m_Str->substr( m_pos1, m_pos2 - m_pos1 );
+            m_Str = nullptr;
         }
-        m_Str = nullptr;
+        return ret;
+
     }
     return "";
 }

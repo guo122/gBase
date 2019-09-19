@@ -35,8 +35,6 @@ public:
 public:
     virtual gString     next() = 0;
     bool                end() { return m_Str == nullptr; }
-    virtual int         next_i(){ return 0; }
-    virtual float       next_f(){ return 0; }
     
 protected:
     gString*            m_Str;
@@ -51,8 +49,8 @@ public:
 
 public:
 	virtual gString		next();
-    virtual int         next_i();
-    virtual float       next_f();
+    int         next_i();
+    float       next_f();
     
 private:
     gString             m_Token;
